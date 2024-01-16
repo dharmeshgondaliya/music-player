@@ -1,13 +1,14 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+
 import 'package:musicplayer/app/data/model/audio_model.dart';
 import 'package:musicplayer/app/data/model/audio_player_state.dart';
 
-class AudioProvider {
+class AudioProvider extends BaseAudioHandler with SeekHandler {
   static final AudioProvider _audioProvider = AudioProvider._internal();
   static AudioProvider get instance => _audioProvider;
-  AudioProvider._internal();
   final AudioPlayer _audioPlayer = AudioPlayer();
   List<AudioModel> _musicPlayList = [];
   int _autoPlayingIndex = -1;
@@ -16,6 +17,17 @@ class AudioProvider {
   final StreamController<AudioPlayerState> _playerStateController =
       StreamController.broadcast();
   AudioModel? _currentAudio;
+
+  AudioProvider._internal() {
+    AudioService.init(
+      builder: () => this,
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.example.musicplayer',
+        androidNotificationChannelName: 'Audio playback',
+        androidNotificationOngoing: true,
+      ),
+    );
+  }
 
   void init() {
     addListener();
@@ -36,16 +48,36 @@ class AudioProvider {
     return await _audioPlayer.setFilePath(_currentAudio!.path!);
   }
 
-  Future<void> play() async {
+  Future<void> playAudio() async {
     await _audioPlayer.play();
   }
 
-  Future<void> pause() async {
+  Future<void> pauseAudio() async {
     await _audioPlayer.pause();
   }
 
-  Future seek(Duration duration) async {
+  Future seekAudio(Duration duration) async {
     await _audioPlayer.seek(duration);
+  }
+
+  @override
+  Future<void> play() {
+    return _audioPlayer.play();
+  }
+
+  @override
+  Future<void> pause() {
+    return _audioPlayer.pause();
+  }
+
+  @override
+  Future<void> seek(Duration position) {
+    return _audioPlayer.seek(position);
+  }
+
+  @override
+  Future<void> stop() {
+    return _audioPlayer.stop();
   }
 
   void clear() {
@@ -86,6 +118,7 @@ class AudioProvider {
         }
       }
     });
+    _audioPlayer.playbackEventStream.map(_transformEvent).pipe(playbackState);
   }
 
   set setMusicPlayList(List<AudioModel> audios) => _musicPlayList = audios;
@@ -109,4 +142,33 @@ class AudioProvider {
 
   Stream<Duration> get bufferedPositionStream =>
       _audioPlayer.bufferedPositionStream;
+
+  PlaybackState _transformEvent(PlaybackEvent event) {
+    return PlaybackState(
+      controls: [
+        MediaControl.rewind,
+        if (_audioPlayer.playing) MediaControl.pause else MediaControl.play,
+        MediaControl.stop,
+        MediaControl.fastForward,
+      ],
+      systemActions: const {
+        MediaAction.seek,
+        MediaAction.seekForward,
+        MediaAction.seekBackward,
+      },
+      androidCompactActionIndices: const [0, 1, 3],
+      processingState: const {
+        ProcessingState.idle: AudioProcessingState.idle,
+        ProcessingState.loading: AudioProcessingState.loading,
+        ProcessingState.buffering: AudioProcessingState.buffering,
+        ProcessingState.ready: AudioProcessingState.ready,
+        ProcessingState.completed: AudioProcessingState.completed,
+      }[_audioPlayer.processingState]!,
+      playing: _audioPlayer.playing,
+      updatePosition: _audioPlayer.position,
+      bufferedPosition: _audioPlayer.bufferedPosition,
+      speed: _audioPlayer.speed,
+      queueIndex: event.currentIndex,
+    );
+  }
 }

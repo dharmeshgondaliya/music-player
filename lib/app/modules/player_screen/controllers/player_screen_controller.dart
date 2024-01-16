@@ -47,7 +47,7 @@ class PlayerScreenController extends GetxController {
   Future<void> setCurrentAudio() async {
     if (audios[index.value].path == null) return;
     await AudioProvider.instance.setFilePath(audios[index.value]);
-    await AudioProvider.instance.play();
+    await AudioProvider.instance.playAudio();
   }
 
   void listenAudioPlaying() async {
@@ -75,14 +75,14 @@ class PlayerScreenController extends GetxController {
 
   void togglePlaying() async {
     if (AudioProvider.instance.playing) {
-      await AudioProvider.instance.pause();
+      await AudioProvider.instance.pauseAudio();
     } else {
-      await AudioProvider.instance.play();
+      await AudioProvider.instance.playAudio();
     }
   }
 
   void seekAudio(double seconds) {
-    AudioProvider.instance.seek(Duration(seconds: seconds.toInt()));
+    AudioProvider.instance.seekAudio(Duration(seconds: seconds.toInt()));
   }
 
   void changeNextPrevious(int val) {
@@ -95,7 +95,7 @@ class PlayerScreenController extends GetxController {
 
   void changeMusic(int val) async {
     AudioProvider.instance.setPlayingIndex = val;
-    await AudioProvider.instance.pause();
+    await AudioProvider.instance.pauseAudio();
     index.value = val;
     await setCurrentAudio();
   }

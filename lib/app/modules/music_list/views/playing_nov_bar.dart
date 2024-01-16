@@ -58,9 +58,9 @@ class PlayingNavBar extends StatelessWidget {
             IconButton(
               onPressed: () {
                 if (AudioProvider.instance.playing) {
-                  AudioProvider.instance.pause();
+                  AudioProvider.instance.pauseAudio();
                 } else {
-                  AudioProvider.instance.play();
+                  AudioProvider.instance.playAudio();
                 }
               },
               icon: Padding(
