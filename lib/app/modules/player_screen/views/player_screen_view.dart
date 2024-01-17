@@ -1,5 +1,4 @@
 import 'package:avatar_glow/avatar_glow.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -8,6 +7,7 @@ import 'package:marquee_text/marquee_text.dart';
 import 'package:musicplayer/app/data/model/audio_player_state.dart';
 import 'package:musicplayer/app/data/provider/audio_provider.dart';
 import 'package:musicplayer/app/utils/common.dart';
+import 'package:wave_blob/wave_blob.dart';
 
 import '../controllers/player_screen_controller.dart';
 
@@ -43,23 +43,17 @@ class PlayerScreenView extends GetView<PlayerScreenController> {
           return Column(
             children: [
               const Spacer(),
-              AvatarGlow(
-                glowRadiusFactor: 0.15,
-                glowColor: Colors.white12,
-                glowCount: 2,
-                curve: Curves.easeInOut,
-                duration: const Duration(seconds: 5),
-                child: Container(
-                  width: Get.width * 0.7,
-                  height: Get.width * 0.7,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
+              SizedBox(
+                width: Get.width * 0.7,
+                height: Get.width * 0.7,
+                child: const WaveBlob(
+                  centerCircle: false,
+                  overCircle: false,
+                  speed: 6,
                   child: Icon(
                     Icons.music_note_outlined,
                     size: 100,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Colors.white,
                   ),
                 ),
               ),

@@ -6,7 +6,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:musicplayer/app/data/model/audio_model.dart';
 import 'package:musicplayer/app/data/model/audio_player_state.dart';
 
-class AudioProvider extends BaseAudioHandler with SeekHandler {
+class AudioProvider extends BaseAudioHandler {
   static final AudioProvider _audioProvider = AudioProvider._internal();
   static AudioProvider get instance => _audioProvider;
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -17,19 +17,12 @@ class AudioProvider extends BaseAudioHandler with SeekHandler {
   final StreamController<AudioPlayerState> _playerStateController =
       StreamController.broadcast();
   AudioModel? _currentAudio;
+  late final AudioHandler _audioHandler;
 
-  AudioProvider._internal() {
-    AudioService.init(
-      builder: () => this,
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'com.example.musicplayer',
-        androidNotificationChannelName: 'Audio playback',
-        androidNotificationOngoing: true,
-      ),
-    );
-  }
+  AudioProvider._internal();
 
-  void init() {
+  void init() async {
+    _audioHandler = await AudioService.init(builder: () => this);
     addListener();
   }
 
@@ -62,12 +55,18 @@ class AudioProvider extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> play() {
+    if (_audioPlayer.playing) {
+      return _audioPlayer.pause();
+    }
     return _audioPlayer.play();
   }
 
   @override
   Future<void> pause() {
-    return _audioPlayer.pause();
+    if (_audioPlayer.playing) {
+      return _audioPlayer.pause();
+    }
+    return _audioPlayer.play();
   }
 
   @override
@@ -118,7 +117,6 @@ class AudioProvider extends BaseAudioHandler with SeekHandler {
         }
       }
     });
-    _audioPlayer.playbackEventStream.map(_transformEvent).pipe(playbackState);
   }
 
   set setMusicPlayList(List<AudioModel> audios) => _musicPlayList = audios;
@@ -142,33 +140,4 @@ class AudioProvider extends BaseAudioHandler with SeekHandler {
 
   Stream<Duration> get bufferedPositionStream =>
       _audioPlayer.bufferedPositionStream;
-
-  PlaybackState _transformEvent(PlaybackEvent event) {
-    return PlaybackState(
-      controls: [
-        MediaControl.rewind,
-        if (_audioPlayer.playing) MediaControl.pause else MediaControl.play,
-        MediaControl.stop,
-        MediaControl.fastForward,
-      ],
-      systemActions: const {
-        MediaAction.seek,
-        MediaAction.seekForward,
-        MediaAction.seekBackward,
-      },
-      androidCompactActionIndices: const [0, 1, 3],
-      processingState: const {
-        ProcessingState.idle: AudioProcessingState.idle,
-        ProcessingState.loading: AudioProcessingState.loading,
-        ProcessingState.buffering: AudioProcessingState.buffering,
-        ProcessingState.ready: AudioProcessingState.ready,
-        ProcessingState.completed: AudioProcessingState.completed,
-      }[_audioPlayer.processingState]!,
-      playing: _audioPlayer.playing,
-      updatePosition: _audioPlayer.position,
-      bufferedPosition: _audioPlayer.bufferedPosition,
-      speed: _audioPlayer.speed,
-      queueIndex: event.currentIndex,
-    );
-  }
 }
