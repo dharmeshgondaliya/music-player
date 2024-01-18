@@ -14,6 +14,6 @@ class SplashScreenController extends GetxController {
   void init() async {
     await DatabaseProvider.instance.init();
     AudioProvider.instance.init();
-    Future.delayed(Duration.zero, () => Get.offNamed(Routes.MUSIC_LIST));
+    Future.delayed(Duration.zero, () => Get.offNamed(Routes.home));
   }
 }

@@ -8,6 +8,7 @@ abstract class Routes {
   static const MUSIC_LIST = _Paths.MUSIC_LIST;
   static const PLAYER_SCREEN = _Paths.PLAYER_SCREEN;
   static const TEST = _Paths.TEST;
+  static const DIRECTORY_LIST = _Paths.DIRECTORY_LIST;
 }
 
 abstract class _Paths {
@@ -17,4 +18,5 @@ abstract class _Paths {
   static const MUSIC_LIST = '/music-list';
   static const PLAYER_SCREEN = '/player-screen';
   static const TEST = '/test';
+  static const DIRECTORY_LIST = '/directory-list';
 }

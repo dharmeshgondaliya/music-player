@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../modules/directory_list/bindings/directory_list_binding.dart';
+import '../modules/directory_list/views/directory_list_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/music_list/bindings/music_list_binding.dart';
@@ -43,6 +45,11 @@ class AppPages {
       name: _Paths.TEST,
       page: () => const TestView(),
       binding: TestBinding(),
+    ),
+    GetPage(
+      name: _Paths.DIRECTORY_LIST,
+      page: () => const DirectoryListView(),
+      binding: DirectoryListBinding(),
     ),
   ];
 }
